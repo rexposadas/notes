@@ -1,5 +1,4 @@
 #!/bin/bash
-bash dockerclean.sh
 bash es.sh 
 bash logstash.sh
 bash kibana.sh
