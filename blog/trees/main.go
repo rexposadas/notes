@@ -48,37 +48,43 @@ func (n *Node) Print() {
 		return
 	}
 
-	q1 := make(chan *Node, 1000)
-	q2 := make(chan *Node, 1000)
+	// nodes in this channel are printed rightaway
+	currentLevel := make(chan *Node, 1000)
 
-	q1 <- n // root of the tree
+	// notes in this channel will be printed after
+	// a new line is generated.
+	nextLevel := make(chan *Node, 1000)
 
-	for len(q1) > 0 {
+	// Let's ready the current node for printing
+	currentLevel <- n // root of the tree
 
-		nn := <-q1
-		fmt.Print(nn.Value)
+	for len(currentLevel) > 0 {
 
-		if nn.Left != nil {
-			q2 <- nn.Left
+		n := <-currentLevel
+		fmt.Print(n.Value)
+
+		if n.Left != nil {
+			nextLevel <- n.Left
 		}
-		if nn.Right != nil {
-			q2 <- nn.Right
+		if n.Right != nil {
+			nextLevel <- n.Right
 		}
 
-		if len(q1) == 0 {
+		if len(currentLevel) == 0 {
 			fmt.Println("")
-			swap(q1, q2)
+			swap(currentLevel, nextLevel)
 		}
 	}
 }
 
-func swap(q1, q2 chan *Node) {
+// swap puts the next level of nodes to the "currentLevel"
+// channel to be printed.
+func swap(currentLevel, nextLevel chan *Node) {
 
-	for len(q2) > 0 {
-		n := <-q2
-		q1 <- n
+	for len(nextLevel) > 0 {
+		n := <-nextLevel
+		currentLevel <- n
 	}
 
-	q2 = make(chan *Node)
 	return
 }
